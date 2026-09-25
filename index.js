@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const shiftRoutes = require("./routes/shiftRoutes");
 const commentRoutes = require("./routes/commentRoutes");
+const permissionRoutes = require("./routes/permissionRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +24,7 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRoutes);
 app.use("/api/shifts", shiftRoutes);
 app.use("/api/comment", commentRoutes);
+app.use("/api/permissions", permissionRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
