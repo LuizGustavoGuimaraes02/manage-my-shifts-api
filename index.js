@@ -2,16 +2,21 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const userRoutes = require("./routes/userRoutes");
 const shiftRoutes = require("./routes/shiftRoutes");
 const commentRoutes = require("./routes/commentRoutes");
 const permissionRoutes = require("./routes/permissionRoutes");
 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(cors({
+    origin: "http://localhost:4200"
+}));
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("Connected to MongoDB"))
@@ -24,7 +29,7 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRoutes);
 app.use("/api/shifts", shiftRoutes);
 app.use("/api/comment", commentRoutes);
-app.use("/api/permissions", permissionRoutes);
+app.use("/api/permission", permissionRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
