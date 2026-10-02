@@ -1,4 +1,6 @@
 const Shift = require("../models/Shift");
+const DUPLICATE_KEY_ERROR_CODE = 11000;
+const DUPLICATE_NAME_MESSAGE = "You already have a shift with this name. Choose a different name.";
 
 async function getAllShifts(req, res) {
     try {
@@ -43,9 +45,9 @@ async function getShiftById(req, res) {
 
 async function createShift(req, res) {
     try {
-        const { start, end, perHour, place } = req.body;
+        const { name, start, end, perHour, place, comments } = req.body;
 
-        if (!start || !end || perHour === undefined || !place) {
+        if (!name || !start || !end || perHour === undefined || !place) {
             return res.status(400).json({ message: "All fields are required." });
         }
 
@@ -59,14 +61,20 @@ async function createShift(req, res) {
 
         const newShift = await Shift.create({
             userId: req.user.id,
+            name,
             start,
             end,
             perHour,
-            place
+            place,
+            comments
         });
 
         res.status(201).json(newShift);
     } catch (error) {
+        if (error.code === DUPLICATE_KEY_ERROR_CODE) {
+            return res.status(409).json({ message: DUPLICATE_NAME_MESSAGE });
+        }
+
         console.error(error);
         res.status(500).json({ message: "Something went wrong while creating the shift." });
     }
@@ -86,20 +94,30 @@ async function updateShift(req, res) {
             return res.status(403).json({ message: "You cannot edit this shift." });
         }
 
-        const { start, end, perHour, place } = req.body;
+        const { name, start, end, perHour, place, comments } = req.body;
 
+        if (name !== undefined) shift.name = name;
         if (start !== undefined) shift.start = start;
         if (end !== undefined) shift.end = end;
         if (perHour !== undefined) shift.perHour = perHour;
         if (place !== undefined) shift.place = place;
+        if (comments !== undefined) shift.comments = comments;
 
         if (new Date(shift.end) <= new Date(shift.start)) {
             return res.status(400).json({ message: "End time must be after start time." });
         }
 
+        if (shift.perHour < 0) {
+            return res.status(400).json({ message: "Hourly rate cannot be negative." });
+        }
+
         await shift.save();
         res.status(200).json(shift);
     } catch (error) {
+        if (error.code === DUPLICATE_KEY_ERROR_CODE) {
+            return res.status(409).json({ message: DUPLICATE_NAME_MESSAGE });
+        }
+
         console.error(error);
         res.status(500).json({ message: "Something went wrong while updating the shift." });
     }
