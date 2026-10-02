@@ -10,6 +10,16 @@ async function getAllShifts(req, res) {
     }
 }
 
+async function getMyShifts(req, res) {
+    try {
+        const shifts = await Shift.find({ userId: req.user.id }).sort({ start: -1 });
+        res.status(200).json(shifts);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Something went wrong while fetching your shifts." });
+    }
+}
+
 async function getShiftById(req, res) {
     try {
         const shift = await Shift.findById(req.params.id);
@@ -110,4 +120,4 @@ async function deleteShift(req, res) {
     }
 }
 
-module.exports = { getAllShifts, getShiftById, createShift, updateShift, deleteShift };
+module.exports = { getAllShifts, getShiftById, getMyShifts, createShift, updateShift, deleteShift };
