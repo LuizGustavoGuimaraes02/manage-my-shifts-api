@@ -1,7 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const { login } = require("../controllers/authController");
-const { createUser, updateUser, deleteUser } = require("../controllers/userController");
+const {
+    createUser,
+    getAllUsers,
+    getUserById,
+    updateUser,
+    deleteUser
+} = require("../controllers/userController");
 const { requireAuth, requireAdmin } = require("../middleware/authMiddleware");
 
 router.get("/me", requireAuth, (req, res) => {
@@ -10,6 +16,8 @@ router.get("/me", requireAuth, (req, res) => {
 
 router.post("/", createUser);
 router.post("/login", login);
+router.get("/", requireAuth, requireAdmin, getAllUsers);
+router.get("/:id", requireAuth, getUserById);
 router.patch("/:id", requireAuth, updateUser);
 router.delete("/:id", requireAuth, requireAdmin, deleteUser);
 

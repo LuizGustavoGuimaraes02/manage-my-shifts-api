@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 const userSchema = new mongoose.Schema(
     {
         email: {
@@ -24,6 +23,9 @@ const userSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
+        birthDate: {
+            type: Date
+        },
         permission: {
             type: String,
             enum: ["admin", "regular_user"],
@@ -37,10 +39,8 @@ const userSchema = new mongoose.Schema(
         ]
     },
     {
-
         timestamps: true
     }
 );
-
 
 module.exports = mongoose.model("User", userSchema);
