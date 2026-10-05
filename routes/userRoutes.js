@@ -6,7 +6,8 @@ const {
     getAllUsers,
     getUserById,
     updateUser,
-    deleteUser
+    deleteUser,
+    resetPassword
 } = require("../controllers/userController");
 const { requireAuth, requireAdmin } = require("../middleware/authMiddleware");
 
@@ -16,6 +17,7 @@ router.get("/me", requireAuth, (req, res) => {
 
 router.post("/", createUser);
 router.post("/login", login);
+router.post("/reset-password", resetPassword);
 router.get("/", requireAuth, requireAdmin, getAllUsers);
 router.get("/:id", requireAuth, getUserById);
 router.patch("/:id", requireAuth, updateUser);

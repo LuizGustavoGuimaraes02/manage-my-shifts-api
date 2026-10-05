@@ -63,6 +63,11 @@ function validateUserData({ email, password, firstName, lastName, birthDate }) {
     return null;
 }
 
+async function deleteUserData(userId) {
+    await Shift.deleteMany({ userId });
+    await Comment.deleteMany({ userId });
+}
+
 async function createUser(req, res) {
     try {
         const { email, password, firstName, lastName, birthDate } = req.body;
@@ -181,9 +186,14 @@ async function updateUser(req, res) {
 
         if (password) {
             targetUser.password = await bcrypt.hash(password, SALT_ROUNDS);
+            targetUser.comments = [];
         }
 
         await targetUser.save();
+
+        if (password) {
+            await deleteUserData(targetUser._id);
+        }
 
         const { password: _, ...publicUser } = targetUser.toObject();
         res.status(200).json(publicUser);
@@ -205,8 +215,7 @@ async function deleteUser(req, res) {
             return res.status(404).json({ message: "User not found." });
         }
 
-        await Shift.deleteMany({ userId: deletedUser._id });
-        await Comment.deleteMany({ userId: deletedUser._id });
+        await deleteUserData(deletedUser._id);
 
         res.status(200).json({ message: "User and all associated data deleted." });
     } catch (error) {
@@ -215,4 +224,40 @@ async function deleteUser(req, res) {
     }
 }
 
-module.exports = { createUser, getAllUsers, getUserById, updateUser, deleteUser };
+async function resetPassword(req, res) {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and new password are required." });
+        }
+
+        const validationError = validateUserData({ email, password });
+
+        if (validationError !== null) {
+            return res.status(400).json({ message: validationError });
+        }
+
+        const user = await User.findOne({ email: email.toLowerCase() });
+
+        if (user === null) {
+            return res.status(404).json({ message: "No account was found with this email." });
+        }
+
+        if (user.permission === "admin") {
+            return res.status(403).json({ message: "Administrator passwords cannot be reset this way." });
+        }
+
+        user.password = await bcrypt.hash(password, SALT_ROUNDS);
+        user.comments = [];
+        await user.save();
+        await deleteUserData(user._id);
+
+        res.status(200).json({ message: "Password reset. All data of this account was deleted." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Something went wrong while resetting the password." });
+    }
+}
+
+module.exports = { createUser, getAllUsers, getUserById, updateUser, deleteUser, resetPassword };
