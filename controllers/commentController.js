@@ -1,4 +1,5 @@
 const Comment = require("../models/Comment");
+const User = require("../models/User");
 
 async function getAllComments(req, res) {
     try {
@@ -37,6 +38,8 @@ async function createComment(req, res) {
             userId: req.user.id,
             description
         });
+
+        await User.findByIdAndUpdate(req.user.id, { $push: { comments: newComment._id } });
 
         res.status(201).json(newComment);
     } catch (error) {
@@ -82,6 +85,8 @@ async function deleteComment(req, res) {
         if (comment === null) {
             return res.status(404).json({ message: "Comment not found." });
         }
+
+        await User.findByIdAndUpdate(comment.userId, { $pull: { comments: comment._id } });
 
         res.status(200).json({ message: "Comment deleted." });
     } catch (error) {
