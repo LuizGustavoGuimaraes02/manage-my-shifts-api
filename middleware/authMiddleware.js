@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { isAdmin } = require("../auth/authModule");
 
 
 function requireAuth(req, res, next) {
@@ -22,7 +23,7 @@ function requireAuth(req, res, next) {
 }
 
 function requireAdmin(req, res, next) {
-    if (req.user.permission !== "admin") {
+    if (!isAdmin(req.user)) {
         return res.status(403).json({ message: "Admin access required." });
     }
 
