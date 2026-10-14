@@ -154,6 +154,28 @@ The client project needed a few things the API specification does not list, so t
 - Password reset has no email verification, as the client specification describes it. Anyone who knows the email of a regular worker can reset that account password. The reset wipes the account data and is refused for administrators, which limits the damage but does not remove the risk.
 - There is no automated test suite. Endpoints were verified manually with Postman, covering success and expected-failure cases.
 
+## Project structure
+
+```txt
+auth/          authentication module (signToken, isAdmin)
+controllers/   one controller per module (user, auth, shift, comment, permission)
+middleware/    requireAuth and requireAdmin
+models/        Mongoose models (User, Shift, Comment, Permission)
+routes/        one route file per module
+postman/       Postman collection with tests for every route
+index.js       Express app and MongoDB connection
+```
+
+The specification asks for a Route, a Controller and a Module file per module. Each module here has its route file, its controller file and its model file (the "Module") in the matching folder.
+
+## Testing with Postman
+
+`postman/manage-my-shifts-api.postman_collection.json` contains every route of this API (49 requests), including the expected error cases (400, 401, 403, 404 and 409). Each request has automated tests.
+
+1. Import the file in Postman (Import, then drop the file).
+2. Open the Variables tab of the collection and set `adminEmail` and `adminPassword` (Current value) to an administrator account (see First-time database setup).
+3. With the API running, use Run collection. Requests run in order: a temporary worker is created and deleted at the end.
+
 ## Author
 
 Luiz Gustavo Guimaraes - course project of the full-stack sequence, Greystone College.
